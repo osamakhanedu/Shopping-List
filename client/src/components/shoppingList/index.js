@@ -2,38 +2,27 @@ import React, { Component } from 'react';
 
 import {Container,Button,ListGroup, ListGroupItem  } from 'reactstrap';
 import { CSSTransition , TransitionGroup  } from 'react-transition-group';
-import uuid  from 'uuid';
 
+import {connect} from 'react-redux'; 
+import {getItems , addItem , deleteItem} from '../../redux/actions/itemsAction';
 
 class ShoppingList extends Component {
  
-    state = { 
-        items :[
-            { id : uuid() , name:"Shoes"},
-            { id : uuid() , name:"Clothes"},
-            { id : uuid() , name:"TShirts"},
-            { id : uuid() , name:"Pents"}   
-        ]
+    componentDidMount(){ 
+        this.props.getItems();
     }
 
-  render() {
-     const {items} = this.state;
+    onDelete = (id)=>{ 
+
+        this.props.deleteItem(id);
+    }
+
+  render() {      
+     const {items} = this.props.item;
     return (
       <div>
          <Container>
-             <Button
-                color="dark"
-                style={{marginBottom: "2rem"}}
-                onClick={ ()=>{ 
-                    const name = prompt("Enter The Item Name")
-                    if(name){ 
-                        let items = this.state.items.slice();
-                        items.push({id:uuid(),name})
-                        this.setState({items})
-                    }
-                    }}
-             >Add Item</Button>
-
+             
              <ListGroup>
                  <TransitionGroup className="shopping-list">
                  {items.map(({id,name})=>(
@@ -43,11 +32,7 @@ class ShoppingList extends Component {
                              className="remove-btn"
                              color="danger"
                              size="sm"
-                             onClick={()=>{ 
-                                 let items = this.state.items.filter(item => item.id !== id); 
-                                 this.setState({items});
-
-                             }}
+                             onClick={this.onDelete.bind(this,id)}
                             >&times;</Button>
                              {name}
                          </ListGroupItem>
@@ -61,4 +46,14 @@ class ShoppingList extends Component {
   }
 }
 
-export default ShoppingList;
+const mapStateToProps = (state)=>({ 
+    item : state.item  // item represent the whole item state 
+})
+
+const mapDispatchToProps = (dispatch)=> ({ 
+    getItems : ()=>{dispatch(getItems)},
+    addItem  : ()=>{dispatch(addItem())},
+    deleteItem : (id) => {dispatch(deleteItem(id)) }
+})
+
+export default connect(mapStateToProps,mapDispatchToProps)(ShoppingList);
